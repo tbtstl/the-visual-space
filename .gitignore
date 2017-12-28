@@ -121,5 +121,5 @@ typings/
 # dotenv environment variables file
 .env
 
-
+build/
 # End of https://www.gitignore.io/api/node,jetbrains+all
