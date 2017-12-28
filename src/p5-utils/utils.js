@@ -1,4 +1,3 @@
-import { perlin2 } from 'fantasy-map-noise';
 import Vector from './vector.js';
 
 export const extractPos = (pom) => {
@@ -52,9 +51,6 @@ export const getNormalPoint = (p, a, b) => {
   const normalPoint = a.add(ab);
   return normalPoint;
 };
-
-// Get 2d perlin noise
-export const pnoise = (x, y) => perlin2(x, y);
 
 export const colorAlpha = (p, hexColor, alpha) => {
   var color = p.color(hexColor);

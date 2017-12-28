@@ -5,11 +5,13 @@ import { constrain } from './utils.js';
  * Common forces we can apply to a mover
  */
 
-export const gravity = (G = 0.2) => (m) => new Vector(0, m.mass * G);
+export const gravity = (G = 0.2) => (m) => {
+  return new Vector(0, m.mass * G);
+}
 export const wind = (wx, wy) => new Vector(wx, wy);
 
 export const friction = (c = 0.01) => (m) => {
-  const friction = m.vel.negative().setMag(c);
+  const friction = m.velocity.negative().setMag(c);
   return friction;
 };
 

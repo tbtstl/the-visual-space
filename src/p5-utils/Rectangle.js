@@ -6,7 +6,7 @@ export default class Rectangle extends Mover {
 
       this.p.stroke(this.stroke);
       this.p.fill(this.color);
-      this.p.rectMode(p.CENTER);
+      this.p.rectMode(this.p.CENTER);
       this.p.pushMatrix();
       this.p.translate(this.location.x, this.location.y);
       this.p.rotate(this.angle);

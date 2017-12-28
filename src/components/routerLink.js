@@ -9,7 +9,7 @@ export default class RouterLink extends React.PureComponent {
       &.active {
         text-decoration: wavy underline;      
       }
-    `
+    `;
     return (
       <Component  {...this.props} is={Link}/>
     )

@@ -14,7 +14,7 @@ export default class Bubbles extends P5Component {
   sketch(p){
     const frameRate = 60;
     let width = window.innerWidth;
-    let height = window.innerHeight - 10;
+    let height = window.innerHeight;
     let color = '#FFDFDF';
     let stroke = '#00449E';
     let location = new Vector(width / 2, height / 2);

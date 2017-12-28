@@ -8,25 +8,12 @@ import {
   Flex,
   Box
 } from 'rebass';
+import colorMap from 'shared/colors';
 import Home from 'components/home';
 import RouterLink from 'components/routerLink';
 import Bubbles from 'components/bubbles';
 import Follower from 'components/follower';
-
-const colorMap = {
-  black: '#000000',
-  nearWhite: '#f4f4f4',
-  darkRed: '#e7040f',
-  lightRed: '#ff725c',
-  purple: '#5e2ca5',
-  lightPurple: '#a463f2',
-  darkPink: '#d5008f',
-  lightPink: '#ffa3d7',
-  darkGreen: '#137752',
-  lightGreen: '#9eebcf',
-  darkBlue: '#00449E',
-  lightBlue: '#76C4E2'
-};
+import Hoops from 'components/hoops';
 
 class App extends Component {
 
@@ -105,11 +92,13 @@ class App extends Component {
             <RouterLink exact to="/">Home</RouterLink>
             <RouterLink to="/follower">Follower</RouterLink>
             <RouterLink to="/bubbles">Bubbles</RouterLink>
+            <RouterLink to="/hoops">Hoops</RouterLink>
           </Box>
           <Box width={1} mx={3}>
             <Route exact path="/" component={Home}/>
             <Route path="/bubbles" component={Bubbles}/>
             <Route path="/follower" component={Follower}/>
+            <Route path="/hoops" component={Hoops}/>
           </Box>
         </Flex>
         </Provider>
