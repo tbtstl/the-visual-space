@@ -10,6 +10,7 @@ import {
 } from 'rebass';
 import RouterLink from 'components/routerLink';
 import Bubbles from 'components/bubbles';
+import Follower from 'components/follower';
 import './App.css';
 
 const colorMap = {
@@ -102,11 +103,12 @@ class App extends Component {
         <Flex wrap m={2}>
           <Box width={1} mx={3}>
             <RouterLink to="/hoops">Hoops</RouterLink>
-            <RouterLink to="/followers">Follower</RouterLink>
+            <RouterLink to="/follower">Follower</RouterLink>
             <RouterLink to="/bubbles">Bubbles</RouterLink>
           </Box>
           <Box width={1} mx={3}>
             <Route path="/bubbles" component={Bubbles}/>
+            <Route path="/follower" component={Follower}/>
           </Box>
         </Flex>
         </Provider>
