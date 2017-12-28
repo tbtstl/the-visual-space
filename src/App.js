@@ -12,7 +12,6 @@ import Home from 'components/home';
 import RouterLink from 'components/routerLink';
 import Bubbles from 'components/bubbles';
 import Follower from 'components/follower';
-import './App.css';
 
 const colorMap = {
   black: '#000000',
