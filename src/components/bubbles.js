@@ -5,6 +5,12 @@ import containCanvas from 'p5-utils/containCanvas';
 import P5Component from 'components/p5Component';
 
 export default class Bubbles extends P5Component {
+  constructor(props){
+    super(props);
+    this.title = 'Bubbles';
+    this.description = 'Watch as the bubbles gravitate around the center of your screen. Click to move the center of gravity.'
+  }
+
   sketch(p){
     const frameRate = 60;
     let width = window.innerWidth;

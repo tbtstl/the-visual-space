@@ -8,6 +8,7 @@ import {
   Flex,
   Box
 } from 'rebass';
+import Home from 'components/home';
 import RouterLink from 'components/routerLink';
 import Bubbles from 'components/bubbles';
 import Follower from 'components/follower';
@@ -102,11 +103,12 @@ class App extends Component {
           </Absolute>
         <Flex wrap m={2}>
           <Box width={1} mx={3}>
-            <RouterLink to="/hoops">Hoops</RouterLink>
+            <RouterLink exact to="/">Home</RouterLink>
             <RouterLink to="/follower">Follower</RouterLink>
             <RouterLink to="/bubbles">Bubbles</RouterLink>
           </Box>
           <Box width={1} mx={3}>
+            <Route exact path="/" component={Home}/>
             <Route path="/bubbles" component={Bubbles}/>
             <Route path="/follower" component={Follower}/>
           </Box>

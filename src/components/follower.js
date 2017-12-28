@@ -4,9 +4,13 @@ import Mover from 'p5-utils/Mover';
 import containCanvas from 'p5-utils/containCanvas';
 
 export default class Follower extends P5Component {
-  sketch(p) {
-    const containerId = 'canvas-container';
+  constructor(props){
+    super(props);
+    this.title = 'Follower';
+    this.description = 'Move your mouse around to construct a cascade of circles';
+  }
 
+  sketch(p) {
     const frameRate = 60;
     let width = window.innerWidth;
     let height = window.innerHeight;
