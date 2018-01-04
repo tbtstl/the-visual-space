@@ -1,3 +1,4 @@
+import {Layer, Network, Neuron} from 'synaptic'
 import containCanvas from 'p5-utils/containCanvas';
 import P5Component from 'components/p5Component';
 import colorMap from 'shared/colors';
@@ -15,6 +16,23 @@ export default class Hoops extends P5Component {
   }
 
   sketch(p){
+    const inputLayer = new Layer(4);
+    const hiddenLayer = new Layer(3);
+    const outputLayer = new Layer(2);
+
+    inputLayer.project(hiddenLayer);
+    hiddenLayer.project(outputLayer);
+
+    // const logistic90 = (x, derivate) => Neuron.squash.LOGISTIC(x, derivate) * 90;
+
+    const network = new Network({
+      input: inputLayer,
+      hidden: [hiddenLayer],
+      output: outputLayer
+    });
+
+    // const learningRate = 0.1;
+
     window.addEventListener('resize', function () {
       const width = window.innerWidth;
       const height = window.innerHeight;
@@ -23,8 +41,7 @@ export default class Hoops extends P5Component {
       containCanvas(canvas.elt);
     }, true);
 
-
-    const frameRate = 60;
+    const frameRate = 30;
     const width = window.innerWidth;
     const height = window.innerHeight;
     const ballConfig = {
@@ -49,16 +66,21 @@ export default class Hoops extends P5Component {
       mass: 10
     };
 
+    const distanceH = (bLoc) => bLoc.distance(netConfig.location);
+    const outputToVel = (o) => new Vector(o[0]*50, o[1]*-50);
+    let scored = false;
+    let minDistance = Number.MAX_VALUE;
+
     const ball = new Mover(ballConfig, p);
     const net = new Rectangle(netConfig, p);
-
-
+    const output = network.activate([ballConfig.location.x, ballConfig.location.y, netConfig.location.x, netConfig.location.y]);
+    console.log(output);
+    ball.velocity = outputToVel(output);
     p.setup = () => {
       const canvas = p.createCanvas(width, height);
       containCanvas(canvas.elt);
       p.frameRate(frameRate);
       p.smooth();
-
     };
 
     p.draw = () => {
@@ -67,9 +89,20 @@ export default class Hoops extends P5Component {
       const gravityForce = gravity()(ball);
       const airFrictionForce = friction(0.05)(ball);
 
-      ball.applyForce(gravityForce);
-      ball.applyForce(airFrictionForce);
-      ball.update();
+      if (!scored){
+        ball.applyForce(gravityForce);
+        ball.applyForce(airFrictionForce);
+        ball.update();
+      }
+
+      minDistance = Math.min(minDistance, distanceH(ball.location));
+
+      if (minDistance < netConfig.mass*2){
+        scored = true;
+        net.color = colorMap.lightGreen;
+      }
+
+      // network.propagate(learningRate, [0]);
       ball.display();
       net.display();
     }
