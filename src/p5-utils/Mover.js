@@ -14,6 +14,7 @@ export default class Mover {
       height: 800,
       color: 175,
       stroke: 0,
+      bounce: {t: true, b: true, l: true, r: true},
       update: this.defaultUpdate,
       display: this.defaultDisplay
     };
@@ -29,6 +30,7 @@ export default class Mover {
     this.canvasHeight = attrs.height;
     this.color = attrs.color;
     this.stroke = attrs.stroke;
+    this.bounce = attrs.bounce;
     this.p = p;
   }
 
@@ -43,18 +45,18 @@ export default class Mover {
     this.acceleration = this.acceleration.multiply(0);
 
     // Bounce off edges
-    if(this.location.x > this.canvasWidth){
+    if(this.location.x > this.canvasWidth && this.bounce.r){
       this.location.x = this.canvasWidth;
       this.velocity.x = this.velocity.x * -1;
-    } else if (this.location.x < 0){
+    } else if (this.location.x < 0 && this.bounce.l){
       this.location.x = 0;
       this.velocity.x = this.velocity.x * -1;
     }
 
-    if(this.location.y > this.canvasHeight){
+    if(this.location.y > this.canvasHeight && this.bounce.b){
       this.location.y = this.canvasHeight;
       this.velocity.y = this.velocity.y * -1;
-    } else if (this.location.y < 0){
+    } else if (this.location.y < 0 && this.bounce.t){
       this.location.y = 0;
       this.velocity.y = this.velocity.y * -1;
     }

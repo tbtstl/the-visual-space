@@ -12,7 +12,7 @@ export default class Hoops extends P5Component {
   constructor(props){
     super(props);
     this.title = 'Hoops';
-    this.description = 'Watch as the agent learns to shoot a ball in the net';
+    this.description = 'Watch as the agent learns to shoot a ball in the net (Works best on desktop)';
   }
 
   sketch(p){
@@ -44,7 +44,7 @@ export default class Hoops extends P5Component {
       containCanvas(canvas.elt);
     }, true);
 
-    const frameRate = 30;
+    const frameRate = 60;
     const width = window.innerWidth;
     const height = window.innerHeight;
     const ballConfig = {
@@ -55,11 +55,12 @@ export default class Hoops extends P5Component {
       height,
       color: colorMap.lightRed,
       stroke: colorMap.black,
+      bounce: {t: false, b: true, l: true, r: true},
       mass: 5
     };
 
     const netConfig = {
-      location: new Vector(window.innerWidth - 60, window.innerHeight/3),
+      location: new Vector(window.innerWidth*4/5, window.innerHeight/5),
       velocity: new Vector(0,0),
       acceleration: new Vector(0,0),
       width,
@@ -71,13 +72,22 @@ export default class Hoops extends P5Component {
 
 
     const learningRate = 0.01;
-    const xScale = window.innerWidth/30;
-    const yScale = window.innerHeight/20;
+    const windowRatio = window.innerHeight/window.innerWidth;
+    let xScale, yScale;
+    if (windowRatio > 1){
+      yScale = windowRatio*(window.innerWidth/25);
+      xScale = 1/windowRatio * (window.innerHeight/40);
+    } else {
+      xScale = windowRatio*(window.innerWidth/35);
+      yScale = 1/windowRatio * (window.innerHeight/40);
+    }
     let network = getNetwork();
     let scored = false;
     let scoredCount = 0;
     let trainingSet = [];
     let epoch = 0;
+    let delta;
+    let prevMinDistance;
     let minDistance;
     let ball;
     let net;
@@ -97,6 +107,7 @@ export default class Hoops extends P5Component {
     };
 
     const reset = () => {
+      prevMinDistance = minDistance;
       ball = new Mover(ballConfig, p);
       net = new Rectangle(netConfig, p);
       windFriction = getWindFriction();
@@ -110,7 +121,7 @@ export default class Hoops extends P5Component {
       scored = false;
       minDistance = Number.MAX_VALUE;
       // If we are training, also recreate the network
-      if(epoch === 0 || (epoch % 5 === 0 && scoredCount === 0)){
+      if(epoch === 0 || (scoredCount === 0 && (delta > 0 && minDistance > 100))){
         network = getNetwork();
       } else {
         propTarget = getPropagationTarget();
@@ -162,6 +173,9 @@ export default class Hoops extends P5Component {
       }
 
       if(stageForReset){
+        if(epoch === 1) prevMinDistance = minDistance;
+        delta = minDistance - prevMinDistance;
+
         const trainingInstance = {output, minDistance};
         trainingSet.push(trainingInstance);
         reset();
