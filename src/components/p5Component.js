@@ -37,7 +37,7 @@ export default class P5Component extends React.Component {
         <Box width={[1, 1/3, 1/5]} mt={5}>
           <FloatingPanel p={2} bg="white">
             <PanelHeader f={3} mb={3}>{this.title}</PanelHeader>
-            <Text>{this.description}</Text>
+            <Text is="div">{this.description}</Text>
           </FloatingPanel>
         </Box>
         <Canvas/>

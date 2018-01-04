@@ -1,4 +1,4 @@
-import {Layer, Network, Neuron} from 'synaptic'
+import {Layer, Network} from 'synaptic';
 import containCanvas from 'p5-utils/containCanvas';
 import P5Component from 'components/p5Component';
 import colorMap from 'shared/colors';
@@ -71,16 +71,23 @@ export default class Hoops extends P5Component {
     let scored = false;
     let minDistance = Number.MAX_VALUE;
 
-    const ball = new Mover(ballConfig, p);
-    const net = new Rectangle(netConfig, p);
-    const output = network.activate([ballConfig.location.x, ballConfig.location.y, netConfig.location.x, netConfig.location.y]);
-    console.log(output);
-    ball.velocity = outputToVel(output);
+    let ball;
+    let net;
+    let output;
+
+    const reset = () => {
+      ball = new Mover(ballConfig, p);
+      net = new Rectangle(netConfig, p);
+      output = network.activate([ballConfig.location.x, ballConfig.location.y, netConfig.location.x, netConfig.location.y]);
+      ball.velocity = outputToVel(output);
+    };
+
     p.setup = () => {
       const canvas = p.createCanvas(width, height);
       containCanvas(canvas.elt);
       p.frameRate(frameRate);
       p.smooth();
+      reset();
     };
 
     p.draw = () => {
@@ -88,6 +95,10 @@ export default class Hoops extends P5Component {
 
       const gravityForce = gravity()(ball);
       const airFrictionForce = friction(0.05)(ball);
+
+      if (ball.location.x > net.location.x){
+        reset();
+      }
 
       if (!scored){
         ball.applyForce(gravityForce);
