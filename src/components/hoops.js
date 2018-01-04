@@ -1,4 +1,4 @@
-import {Layer, Network} from 'synaptic';
+import {Layer, Network, Neuron} from 'synaptic';
 import containCanvas from 'p5-utils/containCanvas';
 import P5Component from 'components/p5Component';
 import colorMap from 'shared/colors';
@@ -16,22 +16,25 @@ export default class Hoops extends P5Component {
   }
 
   sketch(p){
-    const inputLayer = new Layer(4);
-    const hiddenLayer = new Layer(3);
-    const outputLayer = new Layer(2);
-
-    inputLayer.project(hiddenLayer);
-    hiddenLayer.project(outputLayer);
 
     // const logistic90 = (x, derivate) => Neuron.squash.LOGISTIC(x, derivate) * 90;
+    const getNetwork = () => {
+      const inputLayer = new Layer(5);
+      const hiddenLayer = new Layer(3);
+      const outputLayer = new Layer(2);
 
-    const network = new Network({
-      input: inputLayer,
-      hidden: [hiddenLayer],
-      output: outputLayer
-    });
+      inputLayer.project(hiddenLayer);
+      hiddenLayer.project(outputLayer);
 
-    // const learningRate = 0.1;
+      hiddenLayer.set({squash: Neuron.squash.TANH});
+
+      return new Network({
+        input: inputLayer,
+        hidden: [hiddenLayer],
+        output: outputLayer
+      });
+    };
+
 
     window.addEventListener('resize', function () {
       const width = window.innerWidth;
@@ -61,24 +64,59 @@ export default class Hoops extends P5Component {
       acceleration: new Vector(0,0),
       width,
       height,
-      color: colorMap.white,
+      color: colorMap.black,
       stroke: colorMap.lightRed,
       mass: 10
     };
 
-    const distanceH = (bLoc) => bLoc.distance(netConfig.location);
-    const outputToVel = (o) => new Vector(o[0]*50, o[1]*-50);
-    let scored = false;
-    let minDistance = Number.MAX_VALUE;
 
+    const learningRate = 0.01;
+    const xScale = window.innerWidth/30;
+    const yScale = window.innerHeight/20;
+    let network = getNetwork();
+    let scored = false;
+    let scoredCount = 0;
+    let trainingSet = [];
+    let epoch = 0;
+    let minDistance;
     let ball;
     let net;
     let output;
+    let propTarget;
+    let windFriction;
+
+    const distanceH = (bLoc) => bLoc.distance(netConfig.location);
+    const outputToVel = (o) => new Vector(o[0]*xScale, -o[1]*yScale);
+    const getWindFriction = () => Math.random() * 0.1;
+    const getPropagationTarget = () => {
+      if(!trainingSet.length) return [-1,-1];
+      trainingSet.sort((a, b) => {
+        return a.minDistance < b.minDistance ? -1 : 1;
+      });
+      return trainingSet[0].output;
+    };
 
     const reset = () => {
       ball = new Mover(ballConfig, p);
       net = new Rectangle(netConfig, p);
-      output = network.activate([ballConfig.location.x, ballConfig.location.y, netConfig.location.x, netConfig.location.y]);
+      windFriction = getWindFriction();
+
+      // Color the net green if the ball was scored in the last throw
+      if (scored) {
+        net.color = colorMap.lightGreen;
+      }
+
+      epoch++;
+      scored = false;
+      minDistance = Number.MAX_VALUE;
+      // If we are training, also recreate the network
+      if(epoch === 0 || (epoch % 5 === 0 && scoredCount === 0)){
+        network = getNetwork();
+      } else {
+        propTarget = getPropagationTarget();
+        network.propagate(learningRate, propTarget);
+      }
+      output = network.activate([windFriction, ballConfig.location.x, ballConfig.location.y, netConfig.location.x, netConfig.location.y]);
       ball.velocity = outputToVel(output);
     };
 
@@ -92,14 +130,17 @@ export default class Hoops extends P5Component {
 
     p.draw = () => {
       p.clear();
+      let stageForReset = false;
 
       const gravityForce = gravity()(ball);
-      const airFrictionForce = friction(0.05)(ball);
+      const airFrictionForce = friction(windFriction)(ball);
 
+      // Reset if the ball is past the net
       if (ball.location.x > net.location.x){
-        reset();
+        stageForReset = true;
       }
 
+      // If we haven't scored, update the ball location
       if (!scored){
         ball.applyForce(gravityForce);
         ball.applyForce(airFrictionForce);
@@ -108,14 +149,29 @@ export default class Hoops extends P5Component {
 
       minDistance = Math.min(minDistance, distanceH(ball.location));
 
-      if (minDistance < netConfig.mass*2){
-        scored = true;
+      // If we score, set the scored count and flag
+      if (minDistance < netConfig.mass*4){
         net.color = colorMap.lightGreen;
+        net.display();
+        scored = true;
+        scoredCount++;
       }
 
-      // network.propagate(learningRate, [0]);
+      if (scored){
+        stageForReset = true;
+      }
+
+      if(stageForReset){
+        const trainingInstance = {output, minDistance};
+        trainingSet.push(trainingInstance);
+        reset();
+      }
+
       ball.display();
       net.display();
+      p.textSize(64);
+      const accuracy = (scoredCount/epoch) * 100;
+      p.text(`${accuracy.toFixed(2)}%`, window.innerWidth/2, window.innerHeight/2).fill(0,0,0);
     }
   }
 }
