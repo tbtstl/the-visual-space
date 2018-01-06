@@ -92,13 +92,13 @@ class App extends Component {
             <RouterLink exact to="/">Home</RouterLink>
             <RouterLink to="/follower">Follower</RouterLink>
             <RouterLink to="/bubbles">Bubbles</RouterLink>
-            <RouterLink to="/hoops">Hoops</RouterLink>
+            {/*<RouterLink to="/hoops">Hoops</RouterLink>*/}
           </Box>
           <Box width={1} mx={3}>
             <Route exact path="/" component={Home}/>
             <Route path="/bubbles" component={Bubbles}/>
             <Route path="/follower" component={Follower}/>
-            <Route path="/hoops" component={Hoops}/>
+            {/*<Route path="/hoops" component={Hoops}/>*/}
           </Box>
         </Flex>
         </Provider>

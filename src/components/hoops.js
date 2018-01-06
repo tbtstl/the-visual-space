@@ -19,7 +19,7 @@ export default class Hoops extends P5Component {
 
     // const logistic90 = (x, derivate) => Neuron.squash.LOGISTIC(x, derivate) * 90;
     const getNetwork = () => {
-      const inputLayer = new Layer(5);
+      const inputLayer = new Layer(4);
       const hiddenLayer = new Layer(3);
       const outputLayer = new Layer(2);
 
@@ -70,17 +70,11 @@ export default class Hoops extends P5Component {
       mass: 10
     };
 
+    const duration = frameRate;
+    const targetXVel = (netConfig.location.x - ballConfig.location.x)/duration;
+    const targetYVal = (netConfig.location.y - ballConfig.location.y)*9.8*duration/(duration * duration * ballConfig.location.y);
 
-    const learningRate = 0.01;
-    const windowRatio = window.innerHeight/window.innerWidth;
-    let xScale, yScale;
-    if (windowRatio > 1){
-      yScale = windowRatio*(window.innerWidth/25);
-      xScale = 1/windowRatio * (window.innerHeight/40);
-    } else {
-      xScale = windowRatio*(window.innerWidth/35);
-      yScale = 1/windowRatio * (window.innerHeight/40);
-    }
+    const learningRate = 0.1;
     let network = getNetwork();
     let scored = false;
     let scoredCount = 0;
@@ -93,11 +87,25 @@ export default class Hoops extends P5Component {
     let net;
     let output;
     let propTarget;
-    let windFriction;
 
+    const scaleDown = (input=[]) => {
+      const max = Math.max(...input);
+      const min = Math.min(...input);
+      return input.map((a) => (a-min)/(max-min));
+    };
+    const scaleUp = (output) => {
+      const height = window.innerHeight;
+      const width = window.innerWidth;
+      const x = netConfig.location.x;
+      const y = netConfig.location.y;
+      const xScale = (20*x)/(height);
+      const yScale = (20*y)/width;//Math.pow(y, 50);
+      // console.log('xScale', xScale);
+      // console.log('yScale', yScale);
+      return [output[0]*xScale, output[1]*yScale];
+    };
     const distanceH = (bLoc) => bLoc.distance(netConfig.location);
-    const outputToVel = (o) => new Vector(o[0]*xScale, -o[1]*yScale);
-    const getWindFriction = () => Math.random() * 0.1;
+    const outputToVel = (o) => new Vector(o[0], -o[1]);
     const getPropagationTarget = () => {
       if(!trainingSet.length) return [-1,-1];
       trainingSet.sort((a, b) => {
@@ -110,7 +118,6 @@ export default class Hoops extends P5Component {
       prevMinDistance = minDistance;
       ball = new Mover(ballConfig, p);
       net = new Rectangle(netConfig, p);
-      windFriction = getWindFriction();
 
       // Color the net green if the ball was scored in the last throw
       if (scored) {
@@ -121,14 +128,23 @@ export default class Hoops extends P5Component {
       scored = false;
       minDistance = Number.MAX_VALUE;
       // If we are training, also recreate the network
-      if(epoch === 0 || (scoredCount === 0 && (delta > 0 && minDistance > 100))){
+      if(epoch === 0 || (epoch % 5 && scoredCount === 0)){
         network = getNetwork();
       } else {
         propTarget = getPropagationTarget();
         network.propagate(learningRate, propTarget);
       }
-      output = network.activate([windFriction, ballConfig.location.x, ballConfig.location.y, netConfig.location.x, netConfig.location.y]);
-      ball.velocity = outputToVel(output);
+      const rawInput = [ballConfig.location.x, ballConfig.location.y, netConfig.location.x, netConfig.location.y];
+      const scaledInput = scaleDown(rawInput);
+      // console.log('in: ', scaledInput);
+      output = network.activate(scaledInput);
+      const scaledOutput = scaleUp(output);
+      // console.log('out: ', output);
+      // console.log('scaled out: ', scaledOutput);
+      // ball.velocity = outputToVel(scaledOutput);
+      console.log('xVel', targetXVel);
+      console.log('yVel', targetYVal);
+      ball.velocity = new Vector(targetXVel, targetYVal);
     };
 
     p.setup = () => {
@@ -144,7 +160,7 @@ export default class Hoops extends P5Component {
       let stageForReset = false;
 
       const gravityForce = gravity()(ball);
-      const airFrictionForce = friction(windFriction)(ball);
+      const airFrictionForce = friction(0.02)(ball);
 
       // Reset if the ball is past the net
       if (ball.location.x > net.location.x){
@@ -183,9 +199,10 @@ export default class Hoops extends P5Component {
 
       ball.display();
       net.display();
-      p.textSize(64);
+      const textSize = 64;
+      p.textSize(textSize);
       const accuracy = (scoredCount/epoch) * 100;
-      p.text(`${accuracy.toFixed(2)}%`, window.innerWidth/2, window.innerHeight/2).fill(0,0,0);
+      p.text(`${accuracy.toFixed(2)}%`, window.innerWidth/2-textSize, window.innerHeight/2).fill(0,0,0);
     }
   }
 }
